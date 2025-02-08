@@ -13,7 +13,10 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 google_credentials = st.secrets["google"]["credentials"]
 
 # base64로 인코딩된 JSON을 파이썬 딕셔너리로 변환
-decoded_credentials = base64.b64decode(google_credentials).decode('utf-8')
+google_credentials = st.secrets["google"]["credentials"]
+
+# base64로 디코딩 후 utf-8로 인코딩하여 JSON 객체로 변환 (에러 무시)
+decoded_credentials = base64.b64decode(google_credentials).decode('utf-8', errors='ignore')
 creds_dict = json.loads(decoded_credentials)
 
 # 자격 증명 객체 만들기
