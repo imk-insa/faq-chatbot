@@ -52,7 +52,7 @@ def save_chat_log_to_google_sheets(question, answer, feedback):
         st.error(f"❌ 로그 저장 오류: {e}")
 
 # ✅ 금지어 목록 (필요에 따라 추가 가능)
-blocked_keywords = ["비속어1", "비속어2", "폭력", "혐오", "불법"]
+blocked_keywords = ["ㅅㅂ", "ㅄ", "폭력", "혐오", "불법"]
 
 # ✅ 금지된 질문인지 확인하는 함수
 def is_blocked_question(user_input):
@@ -70,9 +70,9 @@ def save_blocked_question(user_input):
 
 # ✅ 이메일 보내는 함수
 def send_email(user_input, answer):
-    sender_email = "your_email@gmail.com"  # 발신자 이메일
+    sender_email = "imkinsa@gmail.com"  # 발신자 이메일
     receiver_email = "junh.park@imarketkorea.com"  # 수신자 이메일 (담당자 이메일)
-    password = "your_email_password"  # 발신자 이메일 비밀번호
+    password = "wnsgur94!!"  # 발신자 이메일 비밀번호
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -89,7 +89,7 @@ def send_email(user_input, answer):
         text = msg.as_string()
         server.sendmail(sender_email, receiver_email, text)
         server.quit()
-        st.success("✅ 질문이 담당자에게 전송되었습니다.")
+        st.success("✅ 담당자에게 이메일이 전송되었습니다.")
     except Exception as e:
         st.error(f"❌ 이메일 전송 오류: {e}")
 
@@ -99,54 +99,49 @@ st.markdown("<h1 style='text-align: center; color: blue;'>FAQ 챗봇</h1>", unsa
 # 🔍 사용자 질문 입력
 user_input = st.text_input("💬 질문을 입력하세요:", "")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []  # 메시지 초기화
-
-# 사용자 질문이 있을 경우 처리
 if user_input:
     # 🚨 민감한 질문 필터링
     if is_blocked_question(user_input):
-        st.session_state.messages.append({"role": "user", "text": user_input})
-        st.session_state.messages.append({"role": "bot", "text": "🚨 부적절한 질문입니다. 다른 질문을 입력해주세요."})
+        st.error("🚨 부적절한 질문입니다. 다른 질문을 입력해주세요.")
         save_blocked_question(user_input)  # 차단된 질문 기록
-        user_input = ""  # 질문 초기화
     else:
         # ✅ 데이터가 없을 경우 대비
         if df.empty:
-            st.session_state.messages.append({"role": "user", "text": user_input})
-            st.session_state.messages.append({"role": "bot", "text": "❌ FAQ 데이터가 없습니다."})
-            user_input = ""  # 질문 초기화
+            st.warning("❌ FAQ 데이터가 없습니다.")
         else:
             best_match, score = process.extractOne(user_input, df["질문"].tolist())
+
             if score > 60:
                 answer = df.loc[df["질문"] == best_match, "답변"].values[0]
-                st.session_state.messages.append({"role": "user", "text": user_input})
-                st.session_state.messages.append({"role": "bot", "text": f"📌 **{best_match}**\n🤖 {answer}"})
-                save_chat_log_to_google_sheets(user_input, answer, "피드백 대기")  # 🚀 Google Sheets에 로그 저장!
+                
+                # 💬 대화창 왼쪽에 답변, 오른쪽에 질문
+                st.markdown(f"**챗봇:** {best_match}")
+                st.markdown(f"**사용자:** {user_input}")
+                st.markdown(f"**챗봇:** {answer}")
+                
+                # 피드백 버튼
+                feedback = ""
+                thumbs_up = st.button("👍 도움이 됐어요")
+                thumbs_down = st.button("👎 부족한 답변이에요")
+                
+                if thumbs_up:
+                    feedback = "좋음"
+                elif thumbs_down:
+                    feedback = "나쁨"
+                
+                if feedback:
+                    save_chat_log_to_google_sheets(user_input, answer, feedback)  # 🚀 Google Sheets에 로그 저장!
+                    
+                    # 📩 담당자에게 전송 버튼
+                    if not thumbs_up and not thumbs_down:
+                        send_email(user_input, answer)
 
-                # 📌 피드백 버튼
+                    st.success(f"피드백이 반영되었습니다: {feedback}")
+
+                # 📌 피드백 버튼 
                 if st.button("👍 도움이 됐어요"):
-                    st.session_state.messages.append({"role": "bot", "text": "✅ 감사합니다! 피드백이 반영되었습니다."})
-                    save_chat_log_to_google_sheets(user_input, answer, "반영됨")  # 피드백 기록
-                    user_input = ""  # 질문 초기화
-
+                    st.success("✅ 감사합니다! 피드백이 반영되었습니다.")
                 if st.button("👎 부족한 답변이에요"):
-                    st.session_state.messages.append({"role": "bot", "text": "📩 개선을 위해 피드백을 저장했습니다."})
-                    save_chat_log_to_google_sheets(user_input, answer, "반영되지 않음")  # 피드백 기록
-                    user_input = ""  # 질문 초기화
-
-                # 📧 이메일 전송 버튼
-                if st.button("담당자에게 문의"):
-                    send_email(user_input, answer)
-                    user_input = ""  # 질문 초기화
+                    st.warning("📩 개선을 위해 피드백을 저장했습니다.")
             else:
-                st.session_state.messages.append({"role": "user", "text": user_input})
-                st.session_state.messages.append({"role": "bot", "text": "❌ 관련된 질문을 찾지 못했어요."})
-                user_input = ""  # 질문 초기화
-
-# 대화 내용 표시
-for message in reversed(st.session_state.messages):
-    if message["role"] == "user":
-        st.markdown(f"<div style='text-align: right; background-color: lightgray; padding: 10px; border-radius: 10px; margin: 5px; width: fit-content;'>**사용자:** {message['text']}</div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div style='background-color: #f0f0f0; padding: 10px; border-radius: 10px; margin: 5px; width: fit-content;'>**챗봇:** {message['text']}</div>", unsafe_allow_html=True)
+                st.warning("❌ 관련된 질문을 찾지 못했어요.")
