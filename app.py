@@ -5,6 +5,7 @@ from google.oauth2.service_account import Credentials
 from fuzzywuzzy import process
 import json
 import base64
+import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -69,10 +70,17 @@ def save_blocked_question(user_input):
         st.error(f"❌ 차단된 질문 저장 오류: {e}")
 
 # ✅ 이메일 보내는 함수
+import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 def send_email(user_input, answer):
     sender_email = "imkinsa@gmail.com"  # 발신자 이메일
     receiver_email = "junh.park@imarketkorea.com"  # 수신자 이메일 (담당자 이메일)
-    password = "wnsgur94!!"  # 발신자 이메일 비밀번호
+    
+    # Streamlit Secrets에서 비밀번호 가져오기
+    password = st.secrets["email"]["EMAIL_PASSWORD"]
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -93,11 +101,12 @@ def send_email(user_input, answer):
     except Exception as e:
         st.error(f"❌ 이메일 전송 오류: {e}")
 
+
 # 🎨 제목
 st.markdown("<h1 style='text-align: center; color: blue;'>FAQ 챗봇</h1>", unsafe_allow_html=True)
 
 # 🔍 사용자 질문 입력
-user_input = st.text_input("💬 질문을 입력하세요:", "")
+user_input = st.text_input("💬 질문을 입력하세요:", key="input_text")
 
 if user_input:
     # 🚨 민감한 질문 필터링
@@ -121,8 +130,8 @@ if user_input:
                 
                 # 피드백 버튼
                 feedback = ""
-                thumbs_up = st.button("👍 도움이 됐어요")
-                thumbs_down = st.button("👎 부족한 답변이에요")
+                thumbs_up = st.button("👍 도움이 됐어요", key="feedback_up")
+                thumbs_down = st.button("👎 부족한 답변이에요", key="feedback_down")
                 
                 if thumbs_up:
                     feedback = "좋음"
@@ -139,9 +148,9 @@ if user_input:
                     st.success(f"피드백이 반영되었습니다: {feedback}")
 
                 # 📌 피드백 버튼 
-                if st.button("👍 도움이 됐어요"):
+                if st.button("👍 도움이 됐어요", key="feedback_up"):
                     st.success("✅ 감사합니다! 피드백이 반영되었습니다.")
-                if st.button("👎 부족한 답변이에요"):
+                if st.button("👎 부족한 답변이에요", key="feedback_down"):
                     st.warning("📩 개선을 위해 피드백을 저장했습니다.")
             else:
                 st.warning("❌ 관련된 질문을 찾지 못했어요.")
