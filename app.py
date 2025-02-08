@@ -125,8 +125,8 @@ if user_input:
                 
                 # 피드백 버튼
                 feedback = ""
-                thumbs_up = st.button("👍 도움이 됐어요", key=f"feedback_up_{user_input}")
-                thumbs_down = st.button("👎 부족한 답변이에요", key=f"feedback_down_{user_input}")
+                thumbs_up = st.button("👍 도움이 됐어요", key=f"feedback_up_{user_input}_{score}")
+                thumbs_down = st.button("👎 부족한 답변이에요", key=f"feedback_down_{user_input}_{score}")
                 
                 if thumbs_up:
                     feedback = "좋음"
