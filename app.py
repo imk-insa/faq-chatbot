@@ -136,7 +136,7 @@ if user_input:
                     user_input = ""  # 질문 초기화
 
                 # 📧 이메일 전송 버튼
-                if st.button("이 질문을 담당자에게 전송"):
+                if st.button("담당자에게 문의"):
                     send_email(user_input, answer)
                     user_input = ""  # 질문 초기화
             else:
@@ -147,7 +147,6 @@ if user_input:
 # 대화 내용 표시
 for message in reversed(st.session_state.messages):
     if message["role"] == "user":
-        st.markdown(f"**사용자:** {message['text']}")
+        st.markdown(f"<div style='text-align: right; background-color: lightgray; padding: 10px; border-radius: 10px; margin: 5px; width: fit-content;'>**사용자:** {message['text']}</div>", unsafe_allow_html=True)
     else:
-        st.markdown(f"**챗봇:** {message['text']}")
-
+        st.markdown(f"<div style='background-color: #f0f0f0; padding: 10px; border-radius: 10px; margin: 5px; width: fit-content;'>**챗봇:** {message['text']}</div>", unsafe_allow_html=True)
