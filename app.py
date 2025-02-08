@@ -70,11 +70,6 @@ def save_blocked_question(user_input):
         st.error(f"❌ 차단된 질문 저장 오류: {e}")
 
 # ✅ 이메일 보내는 함수
-import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
 def send_email(user_input, answer):
     sender_email = "imkinsa@gmail.com"  # 발신자 이메일
     receiver_email = "junh.park@imarketkorea.com"  # 수신자 이메일 (담당자 이메일)
