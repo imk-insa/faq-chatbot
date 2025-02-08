@@ -125,8 +125,8 @@ if user_input:
                 
                 # 피드백 버튼
                 feedback = ""
-                thumbs_up = st.button("👍 도움이 됐어요", key="feedback_up")
-                thumbs_down = st.button("👎 부족한 답변이에요", key="feedback_down")
+                thumbs_up = st.button("👍 도움이 됐어요", key=f"feedback_up_{user_input}")
+                thumbs_down = st.button("👎 부족한 답변이에요", key=f"feedback_down_{user_input}")
                 
                 if thumbs_up:
                     feedback = "좋음"
@@ -143,9 +143,9 @@ if user_input:
                     st.success(f"피드백이 반영되었습니다: {feedback}")
 
                 # 📌 피드백 버튼 
-                if st.button("👍 도움이 됐어요", key="feedback_up"):
+                if st.button("👍 도움이 됐어요", key=f"feedback_up_{user_input}"):
                     st.success("✅ 감사합니다! 피드백이 반영되었습니다.")
-                if st.button("👎 부족한 답변이에요", key="feedback_down"):
+                if st.button("👎 부족한 답변이에요", key=f"feedback_down_{user_input}"):
                     st.warning("📩 개선을 위해 피드백을 저장했습니다.")
             else:
                 st.warning("❌ 관련된 질문을 찾지 못했어요.")
