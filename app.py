@@ -6,7 +6,7 @@ from fuzzywuzzy import process
 
 # ✅ Google Sheets API 연결
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = Credentials.from_service_account_file(r"C:\Users\dulos\Documents\faq-chatbot\credentials.json", scopes=scope)
+creds = Credentials.from_service_account_file("credentials.json", scopes=scope)
 client = gspread.authorize(creds)
 
 # ✅ Google Sheets 스프레드시트 열기 (한 개의 스프레드시트에서 모든 시트 관리)
