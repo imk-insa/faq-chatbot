@@ -26,7 +26,7 @@ faq_sheet = spreadsheet.worksheet("FAQ_DB")  # 📝 FAQ 데이터 시트
 log_sheet = spreadsheet.worksheet("FAQ_Logs")  # 📝 로그 저장용 시트
 blocked_sheet = spreadsheet.worksheet("Blocked_Questions")  # 🚨 차단된 질문 기록용 시트
 
-@st.cache_data
+@st.cache_data   
 def load_faq_data():
     """ Google Sheets에서 FAQ 데이터를 불러와 DataFrame으로 변환 """
     try:
