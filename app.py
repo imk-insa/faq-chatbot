@@ -89,7 +89,7 @@ if user_input:
                 st.write(f"🤖 {answer}")
                 save_chat_log_to_google_sheets(user_input, answer)  # 🚀 Google Sheets에 로그 저장!
 
-                # 📌 피드백 버튼
+                # 📌 피드백 버튼 
                 if st.button("👍 도움이 됐어요"):
                     st.success("✅ 감사합니다! 피드백이 반영되었습니다.")
 
