@@ -7,7 +7,11 @@ import os
 
 # ✅ Google Sheets API 연결
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+<<<<<<< HEAD
 creds = Credentials.from_service_account_file(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"), scopes=scope)
+=======
+creds = Credentials.from_service_account_file("credentials.json", scopes=scope)
+>>>>>>> 584480ec7df939342f1e26582af5ee4a3521fee8
 client = gspread.authorize(creds)
 
 # ✅ Google Sheets 스프레드시트 열기 (한 개의 스프레드시트에서 모든 시트 관리)
