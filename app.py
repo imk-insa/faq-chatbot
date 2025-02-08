@@ -3,15 +3,19 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 from fuzzywuzzy import process
-import os
+import json
 
 # ✅ Google Sheets API 연결
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-<<<<<<< HEAD
-creds = Credentials.from_service_account_file(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"), scopes=scope)
-=======
-creds = Credentials.from_service_account_file("credentials.json", scopes=scope)
->>>>>>> 584480ec7df939342f1e26582af5ee4a3521fee8
+
+# Streamlit Secrets에서 credentials.json 가져오기
+google_credentials = st.secrets["google"]["credentials"]
+
+# base64로 인코딩된 JSON을 파이썬 딕셔너리로 변환
+creds_dict = json.loads(google_credentials)
+
+# 자격 증명 객체 만들기
+creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
 client = gspread.authorize(creds)
 
 # ✅ Google Sheets 스프레드시트 열기 (한 개의 스프레드시트에서 모든 시트 관리)
