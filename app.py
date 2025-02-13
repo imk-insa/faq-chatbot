@@ -44,10 +44,10 @@ def load_faq_data():
 
 df = load_faq_data()
 
-# ✅ 로그 저장 함수
-def save_chat_log_to_google_sheets(question, answer):
+# ✅ 로그 저장 함수 (피드백 포함)
+def save_chat_log_to_google_sheets(question, answer, feedback):
     try:
-        log_sheet.append_row([question, answer])
+        log_sheet.append_row([question, answer, feedback])
     except Exception as e:
         st.error(f"❌ 로그 저장 오류: {e}")
 
@@ -68,12 +68,60 @@ def save_blocked_question(user_input):
     except Exception as e:
         st.error(f"❌ 차단된 질문 저장 오류: {e}")
 
-# 🎨 제목
-st.markdown("<h1 style='text-align: center; color: blue;'>FAQ 챗봇</h1>", unsafe_allow_html=True)
+# ✅ 이메일 보내는 함수
+def send_email(user_input, answer):
+    sender_email = "dulos_kratai@naver.com"  # 네이버 이메일 주소
+    receiver_email = "junh.park@imarketkorea.com"  # 담당자 이메일
+    password = st.secrets["email"]["EMAIL_PASSWORD"]  # 이메일 비밀번호 또는 앱 비밀번호
+
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = f"FAQ 챗봇 문의: {user_input}"
+
+    body = f"사용자가 문의한 질문: {user_input}\n\n답변: {answer}"
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        server = smtplib.SMTP_SSL('smtp.naver.com', 465)
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver_email, msg.as_string())
+        server.quit()
+        st.success("✅ 담당자에게 이메일이 전송되었습니다.")
+    except Exception as e:
+        st.error(f"❌ 이메일 전송 실패: {e}")
+
+# 🎨 제목 (챗봇 스타일 UI)
+st.markdown("""
+    <h1 style='text-align: center; color: blue;'>FAQ 챗봇</h1>
+    <style>
+    .chat-container {
+        max-width: 600px;
+        margin: 10px auto;
+        padding: 10px;
+    }
+    .chat-bubble {
+        padding: 10px;
+        border-radius: 10px;
+        margin: 5px 0;
+        max-width: 80%;
+    }
+    .user {
+        background-color: #DCF8C6;
+        text-align: right;
+        margin-left: auto;
+    }
+    .bot {
+        background-color: #E8E8E8;
+        text-align: left;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # 🔍 사용자 질문 입력
-user_input = st.text_input("💬 질문을 입력하세요:", "")
+user_input = st.text_input("💬 질문을 입력하세요:", key="input_text")
 
+# 사용자 질문에 대한 답변 및 UI 처리
 if user_input:
     # 🚨 민감한 질문 필터링
     if is_blocked_question(user_input):
@@ -88,38 +136,30 @@ if user_input:
 
             if score > 60:
                 answer = df.loc[df["질문"] == best_match, "답변"].values[0]
-                st.success(f"📌 **{best_match}**")
-                st.write(f"🤖 {answer}")
-                save_chat_log_to_google_sheets(user_input, answer)  # 🚀 Google Sheets에 로그 저장!
-
-                # 📌 피드백 버튼 (하나만 보이도록)
-                feedback_key = f"feedback_{user_input}"
-                if st.button("👍 도움이 됐어요", key=feedback_key):
-                    st.success("✅ 감사합니다! 피드백이 반영되었습니다.")
-                elif st.button("👎 부족한 답변이에요", key=f"{feedback_key}_down"):
-                    st.warning("📩 개선을 위해 피드백을 저장했습니다.")
                 
-                # 담당자에게 질문 전송 버튼 추가
-                if st.button("담당자에게 문의", key=f"{feedback_key}_contact"):
-                    # 이메일 전송 로직
-                    sender_email = "imkinsa@gmail.com"
-                    receiver_email = "junh.park@imarketkorea.com"
-                    password = "your_password"
-                    
-                    msg = MIMEMultipart()
-                    msg['From'] = sender_email
-                    msg['To'] = receiver_email
-                    msg['Subject'] = f"FAQ 챗봇 문의: {user_input}"
+                # 💬 채팅 UI 적용
+                st.markdown(f"<div class='chat-container'><div class='chat-bubble user'>👤 {user_input}</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='chat-container'><div class='chat-bubble bot'>🤖 {answer}</div></div>", unsafe_allow_html=True)
+                
+                # 피드백 버튼 (좋음/나쁨)
+                feedback = ""
+                feedback_key = f"feedback_{user_input}"
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("👍 도움이 됐어요", key=f"{feedback_key}_up"):
+                        feedback = "좋음"
+                with col2:
+                    if st.button("👎 부족한 답변이에요", key=f"{feedback_key}_down"):
+                        feedback = "나쁨"
+                
+                if feedback:
+                    save_chat_log_to_google_sheets(user_input, answer, feedback)
+                    st.success(f"피드백이 반영되었습니다: {feedback}")
 
-                    body = f"사용자가 문의한 질문: {user_input}\n\n답변: {answer}"
-                    msg.attach(MIMEText(body, 'plain'))
-
-                    try:
-                        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-                            server.login(sender_email, password)
-                            server.sendmail(sender_email, receiver_email, msg.as_string())
-                        st.success("✅ 질문이 담당자에게 전송되었습니다.")
-                    except Exception as e:
-                        st.error(f"❌ 이메일 전송 실패: {e}")
+                # 담당자에게 문의 버튼
+                if st.button("❓ 담당자에게 문의", key=f"{feedback_key}_contact"):
+                    send_email(user_input, answer)
+                
             else:
                 st.warning("❌ 관련된 질문을 찾지 못했어요.")
